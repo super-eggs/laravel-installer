@@ -41,6 +41,7 @@ class NewCommand extends Command
             ->setName('new')
             ->setDescription('Create a new Laravel application')
             ->addArgument('name', InputArgument::REQUIRED)
+            ->addOption('version', null, InputOption::VALUE_REQUIRED, 'Specify a version for laravel project you create')
             ->addOption('dev', null, InputOption::VALUE_NONE, 'Installs the latest "development" release')
             ->addOption('git', null, InputOption::VALUE_NONE, 'Initialize a Git repository')
             ->addOption('branch', null, InputOption::VALUE_REQUIRED, 'The branch that should be created for a new repository', $this->defaultBranch())
@@ -87,7 +88,7 @@ class NewCommand extends Command
                 label: 'What is the name of your project?',
                 placeholder: 'E.g. example-app',
                 required: 'The project name is required.',
-                validate: fn ($value) => preg_match('/[^\pL\pN\-_.]/', $value) !== 0
+                validate: fn($value) => preg_match('/[^\pL\pN\-_.]/', $value) !== 0
                     ? 'The name may only contain letters, numbers, dashes, underscores, and periods.'
                     : null,
             ));
@@ -97,8 +98,8 @@ class NewCommand extends Command
             match (select(
                 label: 'Would you like to install a starter kit?',
                 options: [
-                    'none' => 'No starter kit',
-                    'breeze' => 'Laravel Breeze',
+                    'none'      => 'No starter kit',
+                    'breeze'    => 'Laravel Breeze',
                     'jetstream' => 'Laravel Jetstream',
                 ],
             )) {
@@ -116,9 +117,9 @@ class NewCommand extends Command
 
         if (! $input->getOption('phpunit') && ! $input->getOption('pest')) {
             $input->setOption('pest', select(
-                label: 'Which testing framework do you prefer?',
-                options: ['PHPUnit', 'Pest'],
-            ) === 'Pest');
+                    label: 'Which testing framework do you prefer?',
+                    options: ['PHPUnit', 'Pest'],
+                ) === 'Pest');
         }
 
         if (! $input->getOption('git') && $input->getOption('github') === false && Process::fromShellCommandline('git --version')->run() === 0) {
@@ -258,7 +259,7 @@ class NewCommand extends Command
         if ($database === 'sqlite') {
             $this->replaceInFile(
                 $defaults,
-                collect($defaults)->map(fn ($default) => "# {$default}")->all(),
+                collect($defaults)->map(fn($default) => "# {$default}")->all(),
                 $directory.'/.env'
             );
 
@@ -266,7 +267,7 @@ class NewCommand extends Command
         }
 
         $defaultPorts = [
-            'pgsql' => '5432',
+            'pgsql'  => '5432',
             'sqlsrv' => '1433',
         ];
 
@@ -367,8 +368,8 @@ class NewCommand extends Command
             $database = select(
                 label: 'Which database will your application use?',
                 options: [
-                    'mysql' => 'MySQL',
-                    'pgsql' => 'PostgreSQL',
+                    'mysql'  => 'MySQL',
+                    'pgsql'  => 'PostgreSQL',
                     'sqlite' => 'SQLite',
                     'sqlsrv' => 'SQL Server',
                 ],
@@ -391,22 +392,23 @@ class NewCommand extends Command
             $input->setOption('stack', select(
                 label: 'Which Breeze stack would you like to install?',
                 options: [
-                    'blade' => 'Blade with Alpine',
-                    'livewire' => 'Livewire (Volt Class API) with Alpine',
+                    'blade'               => 'Blade with Alpine',
+                    'livewire'            => 'Livewire (Volt Class API) with Alpine',
                     'livewire-functional' => 'Livewire (Volt Functional API) with Alpine',
-                    'react' => 'React with Inertia',
-                    'vue' => 'Vue with Inertia',
-                    'api' => 'API only',
+                    'react'               => 'React with Inertia',
+                    'vue'                 => 'Vue with Inertia',
+                    'api'                 => 'API only',
                 ]
             ));
         }
 
-        if (in_array($input->getOption('stack'), ['react', 'vue']) && (! $input->getOption('dark') || ! $input->getOption('ssr'))) {
+        if (in_array($input->getOption('stack'),
+                ['react', 'vue']) && (! $input->getOption('dark') || ! $input->getOption('ssr'))) {
             collect(multiselect(
                 label: 'Would you like any optional features?',
                 options: [
-                    'dark' => 'Dark mode',
-                    'ssr' => 'Inertia SSR',
+                    'dark'       => 'Dark mode',
+                    'ssr'        => 'Inertia SSR',
                     'typescript' => 'TypeScript (experimental)',
                 ],
                 default: array_filter([
@@ -414,8 +416,9 @@ class NewCommand extends Command
                     $input->getOption('ssr') ? 'ssr' : null,
                     $input->getOption('typescript') ? 'typescript' : null,
                 ]),
-            ))->each(fn ($option) => $input->setOption($option, true));
-        } elseif (in_array($input->getOption('stack'), ['blade', 'livewire', 'livewire-functional']) && ! $input->getOption('dark')) {
+            ))->each(fn($option) => $input->setOption($option, true));
+        } elseif (in_array($input->getOption('stack'),
+                ['blade', 'livewire', 'livewire-functional']) && ! $input->getOption('dark')) {
             $input->setOption('dark', confirm(
                 label: 'Would you like dark mode support?',
                 default: false,
@@ -436,7 +439,7 @@ class NewCommand extends Command
                 label: 'Which Jetstream stack would you like to install?',
                 options: [
                     'livewire' => 'Livewire',
-                    'inertia' => 'Vue with Inertia',
+                    'inertia'  => 'Vue with Inertia',
                 ]
             ));
         }
@@ -444,13 +447,13 @@ class NewCommand extends Command
         collect(multiselect(
             label: 'Would you like any optional features?',
             options: collect([
-                'api' => 'API support',
-                'dark' => 'Dark mode',
+                'api'          => 'API support',
+                'dark'         => 'Dark mode',
                 'verification' => 'Email verification',
-                'teams' => 'Team support',
+                'teams'        => 'Team support',
             ])->when(
                 $input->getOption('stack') === 'inertia',
-                fn ($options) => $options->put('ssr', 'Inertia SSR')
+                fn($options) => $options->put('ssr', 'Inertia SSR')
             )->all(),
             default: array_filter([
                 $input->getOption('api') ? 'api' : null,
@@ -459,14 +462,16 @@ class NewCommand extends Command
                 $input->getOption('verification') ? 'verification' : null,
                 $input->getOption('stack') === 'inertia' && $input->getOption('ssr') ? 'ssr' : null,
             ]),
-        ))->each(fn ($option) => $input->setOption($option, true));
+        ))->each(fn($option) => $input->setOption($option, true));
     }
 
     protected function validateStackOption(InputInterface $input)
     {
         if ($input->getOption('breeze')) {
-            if (! in_array($input->getOption('stack'), $stacks = ['blade', 'livewire', 'livewire-functional', 'react', 'vue', 'api'])) {
-                throw new \InvalidArgumentException("Invalid Breeze stack [{$input->getOption('stack')}]. Valid options are: ".implode(', ', $stacks).'.');
+            if (! in_array($input->getOption('stack'),
+                $stacks = ['blade', 'livewire', 'livewire-functional', 'react', 'vue', 'api'])) {
+                throw new \InvalidArgumentException("Invalid Breeze stack [{$input->getOption('stack')}]. Valid options are: ".implode(', ',
+                        $stacks).'.');
             }
 
             return;
@@ -474,7 +479,8 @@ class NewCommand extends Command
 
         if ($input->getOption('jet')) {
             if (! in_array($input->getOption('stack'), $stacks = ['inertia', 'livewire'])) {
-                throw new \InvalidArgumentException("Invalid Jetstream stack [{$input->getOption('stack')}]. Valid options are: ".implode(', ', $stacks).'.');
+                throw new \InvalidArgumentException("Invalid Jetstream stack [{$input->getOption('stack')}]. Valid options are: ".implode(', ',
+                        $stacks).'.');
             }
 
             return;
@@ -491,7 +497,8 @@ class NewCommand extends Command
     protected function installPest(string $directory, InputInterface $input, OutputInterface $output)
     {
         if ($this->removeComposerPackages(['phpunit/phpunit'], $output, true)
-            && $this->requireComposerPackages(['pestphp/pest:^2.0', 'pestphp/pest-plugin-laravel:^2.0'], $output, true)) {
+            && $this->requireComposerPackages(['pestphp/pest:^2.0', 'pestphp/pest-plugin-laravel:^2.0'], $output,
+                true)) {
             $commands = array_filter([
                 $this->phpBinary().' ./vendor/bin/pest --init',
             ]);
@@ -637,6 +644,9 @@ class NewCommand extends Command
         if ($input->getOption('dev')) {
             return 'dev-master';
         }
+        if ($input->getOption('version')) {
+            return $input->getOption('version');
+        }
 
         return '';
     }
@@ -695,8 +705,13 @@ class NewCommand extends Command
      * @param  array  $env
      * @return \Symfony\Component\Process\Process
      */
-    protected function runCommands($commands, InputInterface $input, OutputInterface $output, string $workingPath = null, array $env = [])
-    {
+    protected function runCommands(
+        $commands,
+        InputInterface $input,
+        OutputInterface $output,
+        string $workingPath = null,
+        array $env = []
+    ) {
         if (! $output->isDecorated()) {
             $commands = array_map(function ($value) {
                 if (substr($value, 0, 5) === 'chmod') {
